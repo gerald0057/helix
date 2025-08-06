@@ -56,6 +56,57 @@
 #ifndef _ASSEMBLY_H
 #define _ASSEMBLY_H
 
+#if 1
+
+
+typedef long long Word64;
+
+static __inline int MULSHIFT32(int x, int y)    
+{
+    Word64 result;
+    result = (Word64)x * (Word64)y;
+    return (int)(result >> 32);
+}
+
+static __inline int FASTABS(int x) 
+{
+    int sign;
+    sign = x >> (sizeof(int) * 8 - 1);  // 获取符号位
+    x ^= sign;                          // 如果是负数则按位取反
+    x -= sign;                          // 减去符号位（负数时+1）
+    return x;
+}
+
+static __inline int CLZ(int x)
+{
+    int numZeros;
+    if (!x) return (sizeof(int) * 8);   // 如果是0，返回32
+
+    numZeros = 0;
+    while (!(x & 0x80000000)) {         // 检查最高位
+        numZeros++;
+        x <<= 1;                        // 左移直到最高位为1
+    } 
+    return numZeros;
+}
+
+static __inline Word64 MADD64(Word64 sum, int a, int b)
+{
+    return sum + (Word64)a * (Word64)b;
+}
+
+static __inline Word64 SHL64(Word64 x, int n)
+{
+    return x << n;
+}
+
+static __inline Word64 SAR64(Word64 x, int n)
+{
+    return x >> n;
+}
+
+#else
+
 #if (defined _WIN32 && !defined _WIN32_WCE) || (defined __WINS__ && defined _SYMBIAN) || defined(_OPENWAVE_SIMULATOR) || defined(WINCE_EMULATOR)    /* Symbian emulator for Ix86 */
 
 #pragma warning( disable : 4035 )	/* complains about inline asm not returning a value */
@@ -278,5 +329,7 @@ static __inline int CLZ(int x)
 #error Unsupported platform in assembly.h
 
 #endif	/* platforms */
+
+#endif
 
 #endif /* _ASSEMBLY_H */
